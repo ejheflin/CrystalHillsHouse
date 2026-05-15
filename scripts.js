@@ -477,9 +477,8 @@
     };
   }
 
-  // Expose the pure function for tests and the config for the render logic (Task 3).
+  // Expose the pure state function for the browser test page.
   window.__ohGetState = getOpenHouseState;
-  window.__ohConfig = OPEN_HOUSES;
 
   // --- Render / dismiss ---
 
@@ -585,13 +584,17 @@
 
     lastState = state;
     stripEl = buildStrip(state);
-    // Insert as the first body child so it precedes .topnav in document order.
-    document.body.insertBefore(stripEl, document.body.firstChild);
+    // Insert before the topnav (not at body.firstChild) so the skip-link
+    // stays as the first focusable element in tab order.
+    var topnav = document.querySelector('header.topnav');
+    document.body.insertBefore(stripEl, topnav);
 
     refreshTimer = setInterval(refresh, REFRESH_MS);
   }
 
   // Escape-key dismiss, but only when the scrubber and lightbox are NOT open.
+  // Capture phase so we observe the scrubber/lightbox open state BEFORE their
+  // handlers (registered in bubble phase) synchronously close them on Escape.
   document.addEventListener('keydown', function (e) {
     if (e.key !== 'Escape') return;
     if (!stripEl) return;
@@ -599,7 +602,7 @@
     var lb = document.getElementById('lightbox');
     if (lb && lb.classList.contains('open')) return;
     onDismiss();
-  });
+  }, true);
 
   // Run now (script is deferred, so DOM is parsed) or wait if not.
   if (document.readyState === 'loading') {
