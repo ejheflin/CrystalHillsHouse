@@ -630,3 +630,63 @@
     init();
   }
 })();
+
+// Smart anchor-scroll: handles lazy-loaded images that shift layout during scroll.
+(function () {
+  function eagerLoadAll() {
+    var imgs = document.querySelectorAll('img[loading="lazy"]');
+    for (var i = 0; i < imgs.length; i++) imgs[i].loading = 'eager';
+  }
+
+  function smoothScrollToTarget(target) {
+    var lastTop = null;
+    var stableCount = 0;
+    var attempts = 0;
+    var MAX_ATTEMPTS = 12;       // ~1.2 seconds worst case
+    var INTERVAL_MS = 100;
+
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    var ticker = setInterval(function () {
+      var rect = target.getBoundingClientRect();
+      var currentTop = Math.round(rect.top);
+
+      if (lastTop !== null && Math.abs(currentTop - lastTop) < 2) {
+        stableCount++;
+        // Stable for 2 consecutive ticks → assume layout settled
+        if (stableCount >= 2) {
+          clearInterval(ticker);
+          return;
+        }
+      } else {
+        stableCount = 0;
+        // Position shifted (probably because more images loaded). Re-scroll.
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      lastTop = currentTop;
+      attempts++;
+      if (attempts >= MAX_ATTEMPTS) clearInterval(ticker);
+    }, INTERVAL_MS);
+  }
+
+  document.addEventListener('click', function (e) {
+    // Only handle plain left-clicks on <a href="#…"> with a real target id
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var anchor = e.target.closest && e.target.closest('a[href^="#"]');
+    if (!anchor) return;
+    var href = anchor.getAttribute('href');
+    if (!href || href === '#') return;
+    var id = href.slice(1);
+    var target = document.getElementById(id);
+    if (!target) return;
+
+    e.preventDefault();
+    // Update the URL hash without triggering native jump
+    if (history && history.replaceState) {
+      history.replaceState(null, '', '#' + id);
+    }
+    eagerLoadAll();
+    smoothScrollToTarget(target);
+  });
+})();
