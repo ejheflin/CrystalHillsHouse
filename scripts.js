@@ -511,7 +511,10 @@
     var link = document.createElement('a');
     link.className = 'oh-strip-link';
     link.href = stateObj.linkHref;
-    link.textContent = stateObj.linkText + ' ';
+    var linkLabel = document.createElement('span');
+    linkLabel.className = 'oh-strip-link-label';
+    linkLabel.textContent = stateObj.linkText + ' ';
+    link.appendChild(linkLabel);
     var arrow = document.createElement('span');
     arrow.setAttribute('aria-hidden', 'true');
     arrow.textContent = '→';
@@ -537,7 +540,7 @@
     stripEl.querySelector('.oh-strip-eyebrow').textContent = newState.eyebrow;
     stripEl.querySelector('.oh-strip-phrase').textContent = newState.phrase;
     var link = stripEl.querySelector('.oh-strip-link');
-    link.firstChild.nodeValue = newState.linkText + ' ';
+    link.querySelector('.oh-strip-link-label').textContent = newState.linkText + ' ';
     link.href = newState.linkHref;
   }
 
@@ -571,6 +574,7 @@
   }
 
   function init() {
+    // Require .topnav so the test page (no nav) doesn't render a stray strip during pure-function tests.
     if (!document.body || !document.querySelector('header.topnav')) return;
     try {
       if (sessionStorage.getItem(DISMISS_KEY) === '1') return;
