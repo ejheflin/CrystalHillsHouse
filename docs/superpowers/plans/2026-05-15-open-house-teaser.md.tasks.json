@@ -4,20 +4,20 @@
     {
       "id": 5,
       "subject": "Task 1: Pure state-derivation function + test page",
-      "status": "pending",
+      "status": "completed",
       "description": "**Goal:** Build and verify `getOpenHouseState(events, now)` pure function across all 6 states including local-calendar-day math.\n\n**Files:**\n- Create: `docs/superpowers/tools/open-house-state-tests.html`\n- Modify: `scripts.js` (append IIFE; expose `window.__ohGetState`)\n\n**Acceptance Criteria:**\n- Pure function: no side effects\n- Returns null when no upcoming events\n- All 6 states correct\n- Calendar-day math across month/year boundaries\n- Houston-local time independent of visitor timezone\n- Picks earliest non-past event\n- Test page passes all assertions\n\n**Verify:** Open `docs/superpowers/tools/open-house-state-tests.html` in a browser → all assertions green.\n\n```json:metadata\n{\"files\": [\"scripts.js\", \"docs/superpowers/tools/open-house-state-tests.html\"], \"verifyCommand\": \"open docs/superpowers/tools/open-house-state-tests.html in browser; expect green summary\", \"acceptanceCriteria\": [\"pure function with no side effects\", \"null when no upcoming events\", \"all 6 states correct\", \"calendar-day math across month/year boundaries\", \"Houston-local time independent of visitor timezone\", \"picks earliest non-past event\", \"all test assertions pass in browser\"]}\n```"
     },
     {
       "id": 6,
       "subject": "Task 2: CSS for the strip",
-      "status": "pending",
+      "status": "completed",
       "blockedBy": [5],
       "description": "**Goal:** Add visual styling — ink bg, cream text, brass accents, mobile two-row layout below 640px. Reuses existing tokens only.\n\n**Files:**\n- Modify: `style.css`\n\n**Acceptance Criteria:**\n- Sticky top:0 z-index:50\n- Existing typography and palette tokens\n- 32x32 dismiss button with hover state\n- Brass bottom hairline\n- Focus rings 2px brass\n- Mobile grid layout below 640px\n\n**Verify:** Temporarily insert `<div class=\"oh-strip\">…</div>` placeholder in index.html, browse across breakpoints, confirm focus rings, then remove placeholder.\n\n```json:metadata\n{\"files\": [\"style.css\"], \"verifyCommand\": \"open index.html with temporary strip markup; verify desktop+mobile\", \"acceptanceCriteria\": [\"sticky top:0 z-index:50\", \"ink bg, cream text, brass accents\", \"32x32 dismiss button\", \"brass bottom hairline\", \"focus rings 2px brass\", \"mobile two-row grid below 640px\", \"no new design tokens\"]}\n```"
     },
     {
       "id": 7,
       "subject": "Task 3: Render, refresh, and dismiss logic",
-      "status": "pending",
+      "status": "completed",
       "blockedBy": [5, 6],
       "description": "**Goal:** Wire state function into the page — render strip, attach handlers, 30s refresh, clean removal.\n\n**Files:**\n- Modify: `scripts.js` (extend the open-house IIFE)\n\n**Acceptance Criteria:**\n- No DOM when no event or already dismissed\n- Inserted before topnav with full ARIA\n- Click X or Escape dismisses + persists in sessionStorage\n- 30s refresh updates in place\n- Escape gated by scrubber and lightbox open state\n- Defensive guards for body and sessionStorage\n\n**Verify:** Load index.html, see Tomorrow phrase, click ×, reload, stays hidden. Test Escape gating against scrubber/lightbox.\n\n```json:metadata\n{\"files\": [\"scripts.js\"], \"verifyCommand\": \"open index.html; verify render, dismiss, sessionStorage, Escape gating\", \"acceptanceCriteria\": [\"no DOM when no event or already dismissed\", \"strip inserted before topnav with correct ARIA\", \"click X or Escape dismisses and persists\", \"30s refresh updates state in place\", \"Escape gated by scrubber/lightbox open state\", \"defensive guards for body and sessionStorage\"]}\n```"
     },
@@ -29,5 +29,5 @@
       "description": "**Goal:** Walk the full 18-row QA matrix in a real browser.\n\n**Files:** None (checklist only).\n\n**Acceptance Criteria:** All 18 rows verified; production OPEN_HOUSES restored.\n\n**Verify:** See Task 4 in plan for the matrix.\n\n```json:metadata\n{\"files\": [], \"verifyCommand\": \"manual QA matrix walkthrough — see Task 4 in plan\", \"acceptanceCriteria\": [\"all 18 QA rows verified\", \"OPEN_HOUSES restored to production value\", \"no regressions in existing features\"]}\n```"
     }
   ],
-  "lastUpdated": "2026-05-15"
+  "lastUpdated": "2026-05-15T00:00:00Z"
 }

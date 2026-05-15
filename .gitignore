@@ -24,6 +24,12 @@ npm-debug.log*
 
 # Node (just in case)
 node_modules/
+package.json
+package-lock.json
+
+# Photo originals (kept locally for archival, never deployed)
+assets/photos/_originals/
+assets/photos/staged/_originals/
 
 # Local secrets / env (don't commit)
 .env
