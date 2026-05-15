@@ -477,7 +477,7 @@
     };
   }
 
-  // Expose for the test page and for the render IIFE added in Task 3.
+  // Expose the pure function for tests and the config for the render logic (Task 3).
   window.__ohGetState = getOpenHouseState;
-  window.__ohConfig   = OPEN_HOUSES;
+  window.__ohConfig = OPEN_HOUSES;
 })();
