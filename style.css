@@ -946,3 +946,87 @@ body.scrubber-fullscreen-active { overflow: hidden; }
 .lightbox.gallery-mode .lightbox-prev,
 .lightbox.gallery-mode .lightbox-next { display: flex; }
 body.lightbox-open { overflow: hidden; }
+
+/* Open house teaser strip */
+.oh-strip {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--ink);
+  color: var(--cream);
+  border-bottom: 1px solid var(--brass);
+}
+.oh-strip-inner {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0.625rem var(--content-side-pad);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.oh-strip-eyebrow {
+  font-family: var(--font-ui);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--brass);
+  flex: 0 0 auto;
+}
+.oh-strip-phrase {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: var(--cream);
+  flex: 1 1 auto;
+}
+.oh-strip-link {
+  font-family: var(--font-ui);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--cream);
+  text-decoration: none;
+  border-bottom: 1px solid var(--brass);
+  padding-bottom: 4px;
+  transition: border-width 0.15s ease;
+  flex: 0 0 auto;
+}
+.oh-strip-link:hover { border-bottom-width: 2px; padding-bottom: 3px; }
+.oh-strip-link:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+.oh-strip-dismiss {
+  background: transparent;
+  border: 0;
+  color: var(--cream);
+  opacity: 0.6;
+  font-size: 18px;
+  line-height: 1;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+.oh-strip-dismiss:hover,
+.oh-strip-dismiss:focus { opacity: 1; }
+.oh-strip-dismiss:focus-visible { outline: 2px solid var(--brass); outline-offset: 3px; }
+
+@media (max-width: 640px) {
+  .oh-strip-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "eyebrow dismiss"
+      "phrase  link";
+    row-gap: 0.25rem;
+    column-gap: var(--space-2);
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+  .oh-strip-eyebrow { grid-area: eyebrow; }
+  .oh-strip-dismiss { grid-area: dismiss; justify-self: end; }
+  .oh-strip-phrase  { grid-area: phrase; font-size: 1rem; }
+  .oh-strip-link    { grid-area: link; justify-self: end; }
+}
