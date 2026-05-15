@@ -113,7 +113,7 @@ h1, h2, h3 {
 /* Sticky nav */
 .topnav {
   position: sticky;
-  top: 0;
+  top: var(--oh-strip-height, 0px);
   z-index: 100;
   background: var(--cream);
   border-bottom: 1px solid rgba(26, 35, 50, 0.08);
@@ -156,7 +156,7 @@ h1, h2, h3 {
 /* Sections */
 .section {
   padding: var(--space-6) 0;
-  scroll-margin-top: 80px;
+  scroll-margin-top: calc(80px + var(--oh-strip-height, 0px));
 }
 .section-hero { padding: 0; }
 

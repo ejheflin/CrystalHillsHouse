@@ -488,6 +488,12 @@
   var stripEl = null;
   var refreshTimer = null;
   var lastState = null;
+  var stripResizeObserver = null;
+
+  function updateStripHeight() {
+    if (!stripEl) return;
+    document.documentElement.style.setProperty('--oh-strip-height', stripEl.offsetHeight + 'px');
+  }
 
   function buildStrip(stateObj) {
     var wrap = document.createElement('div');
@@ -549,6 +555,12 @@
   }
 
   function removeStrip() {
+    document.documentElement.style.removeProperty('--oh-strip-height');
+    if (stripResizeObserver) {
+      stripResizeObserver.disconnect();
+      stripResizeObserver = null;
+    }
+    window.removeEventListener('resize', updateStripHeight);
     if (stripEl && stripEl.parentNode) stripEl.parentNode.removeChild(stripEl);
     stripEl = null;
     if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
@@ -588,6 +600,13 @@
     // stays as the first focusable element in tab order.
     var topnav = document.querySelector('header.topnav');
     document.body.insertBefore(stripEl, topnav);
+
+    updateStripHeight();
+    if (typeof ResizeObserver !== 'undefined') {
+      stripResizeObserver = new ResizeObserver(updateStripHeight);
+      stripResizeObserver.observe(stripEl);
+    }
+    window.addEventListener('resize', updateStripHeight);
 
     refreshTimer = setInterval(refresh, REFRESH_MS);
   }
