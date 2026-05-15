@@ -486,13 +486,20 @@
   var REFRESH_MS = 30 * 1000;
 
   var stripEl = null;
+  var topnavEl = null;
   var refreshTimer = null;
   var lastState = null;
   var stripResizeObserver = null;
+  var topnavResizeObserver = null;
 
   function updateStripHeight() {
     if (!stripEl) return;
     document.documentElement.style.setProperty('--oh-strip-height', stripEl.offsetHeight + 'px');
+  }
+
+  function updateTopnavHeight() {
+    if (!topnavEl) return;
+    document.documentElement.style.setProperty('--topnav-height', topnavEl.offsetHeight + 'px');
   }
 
   function buildStrip(stateObj) {
@@ -556,13 +563,20 @@
 
   function removeStrip() {
     document.documentElement.style.removeProperty('--oh-strip-height');
+    document.documentElement.style.removeProperty('--topnav-height');
     if (stripResizeObserver) {
       stripResizeObserver.disconnect();
       stripResizeObserver = null;
     }
+    if (topnavResizeObserver) {
+      topnavResizeObserver.disconnect();
+      topnavResizeObserver = null;
+    }
     window.removeEventListener('resize', updateStripHeight);
+    window.removeEventListener('resize', updateTopnavHeight);
     if (stripEl && stripEl.parentNode) stripEl.parentNode.removeChild(stripEl);
     stripEl = null;
+    topnavEl = null;
     if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
   }
 
@@ -596,17 +610,21 @@
 
     lastState = state;
     stripEl = buildStrip(state);
-    // Insert before the topnav (not at body.firstChild) so the skip-link
-    // stays as the first focusable element in tab order.
-    var topnav = document.querySelector('header.topnav');
-    document.body.insertBefore(stripEl, topnav);
+    // Insert AFTER the topnav so the topnav stays on top in the sticky stack
+    // and the strip pins just below it (via --topnav-height in CSS).
+    topnavEl = document.querySelector('header.topnav');
+    topnavEl.parentNode.insertBefore(stripEl, topnavEl.nextSibling);
 
     updateStripHeight();
+    updateTopnavHeight();
     if (typeof ResizeObserver !== 'undefined') {
       stripResizeObserver = new ResizeObserver(updateStripHeight);
       stripResizeObserver.observe(stripEl);
+      topnavResizeObserver = new ResizeObserver(updateTopnavHeight);
+      topnavResizeObserver.observe(topnavEl);
     }
     window.addEventListener('resize', updateStripHeight);
+    window.addEventListener('resize', updateTopnavHeight);
 
     refreshTimer = setInterval(refresh, REFRESH_MS);
   }

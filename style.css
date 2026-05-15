@@ -113,7 +113,7 @@ h1, h2, h3 {
 /* Sticky nav */
 .topnav {
   position: sticky;
-  top: var(--oh-strip-height, 0px);
+  top: 0;
   z-index: 100;
   background: var(--cream);
   border-bottom: 1px solid rgba(26, 35, 50, 0.08);
@@ -985,7 +985,7 @@ body.lightbox-open { overflow: hidden; }
 /* Open house teaser strip */
 .oh-strip {
   position: sticky;
-  top: 0;
+  top: var(--topnav-height, 0px);
   z-index: 50;
   background: var(--ink);
   color: var(--cream);
