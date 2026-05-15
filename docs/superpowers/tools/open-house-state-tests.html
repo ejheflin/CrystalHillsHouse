@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Open House State Tests</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; max-width: 900px; margin: 0 auto; }
+    h1 { margin: 0 0 16px; }
+    .summary { padding: 12px 16px; border-radius: 4px; margin: 16px 0; font-weight: 600; }
+    .summary.pass { background: #dff6dd; color: #094409; }
+    .summary.fail { background: #fde7e9; color: #5a0a14; }
+    .case { padding: 10px 12px; border-left: 3px solid #ddd; margin: 6px 0; font-family: ui-monospace, Menlo, monospace; font-size: 13px; white-space: pre-wrap; }
+    .case.pass { border-left-color: #2e7d32; }
+    .case.fail { border-left-color: #c62828; background: #fff5f5; }
+    .case .label { font-weight: 600; }
+    .case .detail { color: #555; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Open House State Tests</h1>
+  <p>Loads <code>../../../scripts.js</code> and exercises <code>window.__ohGetState</code> across all 6 states. The strip itself does not render here because the body has no <code>.topnav</code>.</p>
+  <div id="summary" class="summary">Running…</div>
+  <div id="results"></div>
+
+  <script src="../../../scripts.js" defer></script>
+  <script defer>
+    window.addEventListener('load', function () {
+      var results = document.getElementById('results');
+      var summary = document.getElementById('summary');
+      var passed = 0, failed = 0;
+
+      function iso(s) { return new Date(s); }
+
+      function run(label, events, now, expect) {
+        var actual = window.__ohGetState ? window.__ohGetState(events, now) : null;
+        var div = document.createElement('div');
+        div.className = 'case';
+        var ok = true;
+        var detail = '';
+        if (expect === null) {
+          if (actual !== null) { ok = false; detail = 'Expected null, got ' + JSON.stringify(actual); }
+        } else if (actual === null) {
+          ok = false; detail = 'Expected ' + JSON.stringify(expect) + ', got null';
+        } else {
+          Object.keys(expect).forEach(function (k) {
+            if (actual[k] !== expect[k]) {
+              ok = false;
+              detail += k + ': expected ' + JSON.stringify(expect[k]) + ', got ' + JSON.stringify(actual[k]) + '\n';
+            }
+          });
+        }
+        div.classList.add(ok ? 'pass' : 'fail');
+        div.innerHTML = '<span class="label">' + (ok ? '&#10003; ' : '&#10007; ') + label + '</span>' + (detail ? '<div class="detail">' + detail + '</div>' : '');
+        results.appendChild(div);
+        if (ok) passed++; else failed++;
+      }
+
+      var EVENT = { start: '2026-05-16T13:00:00-05:00', end: '2026-05-16T16:00:00-05:00' };
+      var GMAPS = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent('1406 Crystal Hills Drive, Houston, TX 77077');
+
+      // Past: now is after end
+      run('past → null', [EVENT], iso('2026-05-16T16:30:00-05:00'), null);
+
+      // No events
+      run('empty config → null', [], iso('2026-05-15T12:00:00-05:00'), null);
+
+      // Live: now is between start and end
+      run('live state', [EVENT], iso('2026-05-16T14:30:00-05:00'), {
+        state: 'live', eyebrow: 'OPEN NOW', phrase: 'Until 4 PM today', linkText: 'Get directions', linkHref: GMAPS
+      });
+
+      // Today, before start: same local day, now < start
+      run('today (same day, before start)', [EVENT], iso('2026-05-16T09:00:00-05:00'), {
+        state: 'today', eyebrow: 'OPEN HOUSE', phrase: 'Today \xb7 1–4 PM', linkText: 'Plan a visit', linkHref: '#showing'
+      });
+
+      // Tomorrow: start is the next local day
+      run('tomorrow (24h before)', [EVENT], iso('2026-05-15T13:00:00-05:00'), {
+        state: 'tomorrow', eyebrow: 'OPEN HOUSE', phrase: 'Tomorrow \xb7 1–4 PM', linkText: 'Plan a visit', linkHref: '#showing'
+      });
+
+      // Tomorrow: just past midnight prior
+      run('tomorrow (late night before)', [EVENT], iso('2026-05-15T23:30:00-05:00'), {
+        state: 'tomorrow', eyebrow: 'OPEN HOUSE', phrase: 'Tomorrow \xb7 1–4 PM'
+      });
+
+      // Near: 2–6 days out
+      run('near (Wed → following Sat)', [EVENT], iso('2026-05-13T12:00:00-05:00'), {
+        state: 'near', eyebrow: 'OPEN HOUSE', phrase: 'This Saturday \xb7 1–4 PM', linkText: 'Plan a visit', linkHref: '#showing'
+      });
+
+      // Future: 7+ days out
+      run('future (10 days out)', [EVENT], iso('2026-05-06T12:00:00-05:00'), {
+        state: 'future', eyebrow: 'OPEN HOUSE', phrase: 'Saturday, May 16 \xb7 1–4 PM', linkText: 'Plan a visit', linkHref: '#showing'
+      });
+
+      // Month boundary: now=May 31, start=June 1 → tomorrow
+      run('tomorrow across month boundary', [
+        { start: '2026-06-01T13:00:00-05:00', end: '2026-06-01T16:00:00-05:00' }
+      ], iso('2026-05-31T18:00:00-05:00'), {
+        state: 'tomorrow', phrase: 'Tomorrow \xb7 1–4 PM'
+      });
+
+      // Year boundary: now=Dec 31, start=Jan 1 → tomorrow
+      run('tomorrow across year boundary', [
+        { start: '2027-01-01T13:00:00-06:00', end: '2027-01-01T16:00:00-06:00' }
+      ], iso('2026-12-31T18:00:00-06:00'), {
+        state: 'tomorrow', phrase: 'Tomorrow \xb7 1–4 PM'
+      });
+
+      // Visitor timezone independence: visitor in Tokyo on 2026-05-16 14:00 JST = 2026-05-16 00:00 CDT
+      run('tokyo visitor sees today, not tomorrow', [EVENT], iso('2026-05-16T14:00:00+09:00'), {
+        state: 'today', phrase: 'Today \xb7 1–4 PM'
+      });
+
+      // Multiple events: only the earliest non-past is used
+      run('picks earliest non-past', [
+        { start: '2026-05-09T13:00:00-05:00', end: '2026-05-09T16:00:00-05:00' }, // past
+        EVENT, // future
+        { start: '2026-08-15T13:00:00-05:00', end: '2026-08-15T16:00:00-05:00' }  // further future
+      ], iso('2026-05-15T13:00:00-05:00'), {
+        state: 'tomorrow', phrase: 'Tomorrow \xb7 1–4 PM'
+      });
+
+      if (failed === 0) {
+        summary.className = 'summary pass';
+        summary.textContent = '✓ All ' + passed + ' tests passed';
+      } else {
+        summary.className = 'summary fail';
+        summary.textContent = '✗ ' + failed + ' failed, ' + passed + ' passed';
+      }
+    });
+  </script>
+</body>
+</html>

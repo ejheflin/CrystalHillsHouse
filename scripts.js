@@ -352,3 +352,132 @@
     });
   });
 })();
+
+// Open house teaser strip — state derivation (pure)
+(function () {
+  // Config: append future open houses here, chronologically.
+  var OPEN_HOUSES = [
+    { start: '2026-05-16T13:00:00-05:00', end: '2026-05-16T16:00:00-05:00' }
+  ];
+
+  var GMAPS_URL = 'https://www.google.com/maps/dir/?api=1&destination=' +
+    encodeURIComponent('1406 Crystal Hills Drive, Houston, TX 77077');
+
+  // Extract { y, m, d } for a Date in America/Chicago (Houston local time).
+  // Uses Intl.DateTimeFormat so the result is correct regardless of the
+  // visitor's own timezone.
+  function houstonYMD(date) {
+    var parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Chicago',
+      year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(date);
+    var y = 0, m = 0, d = 0;
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i];
+      if (p.type === 'year')  { y = parseInt(p.value, 10); }
+      if (p.type === 'month') { m = parseInt(p.value, 10); }
+      if (p.type === 'day')   { d = parseInt(p.value, 10); }
+    }
+    return { y: y, m: m, d: d };
+  }
+
+  // Whole-day delta between two YMD objects: returns (a - b) in whole days.
+  // Builds UTC timestamps from the YMD parts to avoid any DST distortion.
+  function dayDelta(a, b) {
+    var ua = Date.UTC(a.y, a.m - 1, a.d);
+    var ub = Date.UTC(b.y, b.m - 1, b.d);
+    return Math.round((ua - ub) / 86400000);
+  }
+
+  // Format "Saturday, May 16" in Houston local time.
+  function formatFullDate(date) {
+    return new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Chicago',
+      weekday: 'long', month: 'long', day: 'numeric'
+    }).format(date);
+  }
+
+  // Format "This Saturday" — weekday name from Houston local time, prefixed with "This ".
+  function formatNearWeekday(date) {
+    var weekday = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Chicago', weekday: 'long'
+    }).format(date);
+    return 'This ' + weekday;
+  }
+
+  // Return the first event in the array whose end > now, or null if none.
+  // Assumes events are in chronological order (per config convention).
+  function pickEvent(events, now) {
+    if (!events || events.length === 0) return null;
+    var nowMs = now.getTime();
+    for (var i = 0; i < events.length; i++) {
+      if (new Date(events[i].end).getTime() > nowMs) return events[i];
+    }
+    return null;
+  }
+
+  // Pure state-derivation function.
+  // Returns one of: null | {state, eyebrow, phrase, linkText, linkHref}
+  function getOpenHouseState(events, now) {
+    var ev = pickEvent(events, now);
+    if (!ev) return null;
+
+    var start = new Date(ev.start);
+    var end   = new Date(ev.end);
+    var nowMs = now.getTime();
+
+    // Live: now is inside the open-house window
+    if (nowMs >= start.getTime() && nowMs < end.getTime()) {
+      return {
+        state:    'live',
+        eyebrow:  'OPEN NOW',
+        phrase:   'Until 4 PM today',
+        linkText: 'Get directions',
+        linkHref: GMAPS_URL
+      };
+    }
+
+    // All pre-event states are determined by the Houston-local calendar-day gap
+    var delta = dayDelta(houstonYMD(start), houstonYMD(now));
+
+    if (delta === 0) {
+      return {
+        state:    'today',
+        eyebrow:  'OPEN HOUSE',
+        phrase:   'Today \xb7 1–4 PM',
+        linkText: 'Plan a visit',
+        linkHref: '#showing'
+      };
+    }
+    if (delta === 1) {
+      return {
+        state:    'tomorrow',
+        eyebrow:  'OPEN HOUSE',
+        phrase:   'Tomorrow \xb7 1–4 PM',
+        linkText: 'Plan a visit',
+        linkHref: '#showing'
+      };
+    }
+    if (delta >= 2 && delta <= 6) {
+      return {
+        state:    'near',
+        eyebrow:  'OPEN HOUSE',
+        phrase:   formatNearWeekday(start) + ' \xb7 1–4 PM',
+        linkText: 'Plan a visit',
+        linkHref: '#showing'
+      };
+    }
+    // delta >= 7
+    return {
+      state:    'future',
+      eyebrow:  'OPEN HOUSE',
+      phrase:   formatFullDate(start) + ' \xb7 1–4 PM',
+      linkText: 'Plan a visit',
+      linkHref: '#showing'
+    };
+  }
+
+  // Expose for the test page and for the render IIFE added in Task 3.
+  window.__ohGetState = getOpenHouseState;
+  window.__ohConfig   = OPEN_HOUSES;
+})();
