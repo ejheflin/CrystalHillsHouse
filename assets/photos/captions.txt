@@ -1,0 +1,27 @@
+backyard1 - Outdoor living space — the back gate opens to the trail.
+backyard2 - Double doors open to the primary suite.
+backyard3 - Kitchen windows and a full glass door open to the garden.
+backyard4 -
+bathroom2 - Upstairs Jack & Jill bathroom
+bathroom3 - Upstairs Jack & Jill bathroom
+bathroom4 - Upstairs Jack & Jill bathroom
+dining1 - Large dining area open to the kitchen
+dining2 - Built-ins separate the dining and living areas.
+entry - Heavy iron doors — natural light without losing street privacy.
+entry2 - Foyer opens to the living and dining areas.
+her-closet - Separate his-and-hers walk-in closets, both with custom built-ins.
+kitchen1 - 9-foot island comfortably seats four.
+kitchen2 - The iron back door matches the front entry and overlooks the back patio.
+kitchen3 - Side-by-side full-size fridge and freezer — built for hosting.
+kitchen4 - The Wolf 48-inch range contains dual electric ovens, four gas burners, and a gas griddle on top.
+kitchen5 -
+living2 - Gas fireplace, flanked by built-ins.
+living3 - Elevated living area — separation from the dining without losing the open feel.
+masterbath1 - Primary bath — marble countertop on soft-close inset cabinetry.
+masterbath2 - Her closet separates the vanity and the soaking tub.
+masterbath3 - Frameless glass shower in the primary bath.
+playground - Heathlake — clubhouse, playground, picnic area, tennis courts, and pool.
+powder - Powder bath off the dining area, tucked under the stairs.
+room2 - One of three upstairs bedrooms — natural light throughout.
+room3 - Another upstairs bedroom.
+trail - Back gate to miles of Terry Hershey trail — hiking and biking out the door.
