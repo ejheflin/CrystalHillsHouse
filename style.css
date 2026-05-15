@@ -851,12 +851,12 @@ body.scrubber-fullscreen-active { overflow: hidden; }
   justify-content: center;
   width: 44px;
   height: 44px;
-  color: var(--ink);
+  color: var(--brass);
   text-decoration: none;
   transition: color 0.15s ease;
 }
 .nav-quick-icon:hover,
-.nav-quick-icon:focus { color: var(--brass); }
+.nav-quick-icon:focus { color: var(--ink); }
 .nav-quick-icon:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
 
 @media (max-width: 768px) {
