@@ -843,6 +843,32 @@ body.scrubber-fullscreen-active { overflow: hidden; }
   }
 }
 
+/* Mobile-only quick-action icons (phone, SMS) */
+.nav-quick-actions { display: none; }
+.nav-quick-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--ink);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+.nav-quick-icon:hover,
+.nav-quick-icon:focus { color: var(--brass); }
+.nav-quick-icon:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+
+@media (max-width: 768px) {
+  .nav-quick-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: auto;
+    margin-right: 0.25rem;
+  }
+}
+
 /* Defensive: ensure form fields fill their parent on all viewports */
 .showing-form input,
 .showing-form textarea {
