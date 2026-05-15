@@ -480,4 +480,127 @@
   // Expose the pure function for tests and the config for the render logic (Task 3).
   window.__ohGetState = getOpenHouseState;
   window.__ohConfig = OPEN_HOUSES;
+
+  // --- Render / dismiss ---
+
+  var DISMISS_KEY = 'openHouseDismissed';
+  var REFRESH_MS = 30 * 1000;
+
+  var stripEl = null;
+  var refreshTimer = null;
+  var lastState = null;
+
+  function buildStrip(stateObj) {
+    var wrap = document.createElement('div');
+    wrap.className = 'oh-strip';
+    wrap.setAttribute('role', 'region');
+    wrap.setAttribute('aria-label', 'Open house announcement');
+
+    var inner = document.createElement('div');
+    inner.className = 'oh-strip-inner';
+
+    var eyebrow = document.createElement('span');
+    eyebrow.className = 'oh-strip-eyebrow';
+    eyebrow.textContent = stateObj.eyebrow;
+
+    var phrase = document.createElement('span');
+    phrase.className = 'oh-strip-phrase';
+    phrase.setAttribute('aria-live', 'polite');
+    phrase.textContent = stateObj.phrase;
+
+    var link = document.createElement('a');
+    link.className = 'oh-strip-link';
+    link.href = stateObj.linkHref;
+    link.textContent = stateObj.linkText + ' ';
+    var arrow = document.createElement('span');
+    arrow.setAttribute('aria-hidden', 'true');
+    arrow.textContent = '→';
+    link.appendChild(arrow);
+
+    var dismiss = document.createElement('button');
+    dismiss.type = 'button';
+    dismiss.className = 'oh-strip-dismiss';
+    dismiss.setAttribute('aria-label', 'Dismiss open house announcement');
+    dismiss.textContent = '\xd7';
+    dismiss.addEventListener('click', onDismiss);
+
+    inner.appendChild(eyebrow);
+    inner.appendChild(phrase);
+    inner.appendChild(link);
+    inner.appendChild(dismiss);
+    wrap.appendChild(inner);
+    return wrap;
+  }
+
+  function applyStateUpdate(newState) {
+    if (!stripEl || !newState) return;
+    stripEl.querySelector('.oh-strip-eyebrow').textContent = newState.eyebrow;
+    stripEl.querySelector('.oh-strip-phrase').textContent = newState.phrase;
+    var link = stripEl.querySelector('.oh-strip-link');
+    link.firstChild.nodeValue = newState.linkText + ' ';
+    link.href = newState.linkHref;
+  }
+
+  function onDismiss() {
+    try { sessionStorage.setItem(DISMISS_KEY, '1'); } catch (e) { /* private mode */ }
+    removeStrip();
+  }
+
+  function removeStrip() {
+    if (stripEl && stripEl.parentNode) stripEl.parentNode.removeChild(stripEl);
+    stripEl = null;
+    if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; }
+  }
+
+  function stateChanged(a, b) {
+    if (!a || !b) return a !== b;
+    return a.state !== b.state
+      || a.phrase !== b.phrase
+      || a.eyebrow !== b.eyebrow
+      || a.linkText !== b.linkText
+      || a.linkHref !== b.linkHref;
+  }
+
+  function refresh() {
+    var next = getOpenHouseState(OPEN_HOUSES, new Date());
+    if (!next) { removeStrip(); return; }
+    if (stateChanged(lastState, next)) {
+      applyStateUpdate(next);
+      lastState = next;
+    }
+  }
+
+  function init() {
+    if (!document.body || !document.querySelector('header.topnav')) return;
+    try {
+      if (sessionStorage.getItem(DISMISS_KEY) === '1') return;
+    } catch (e) { /* private mode — fall through and render */ }
+
+    var state = getOpenHouseState(OPEN_HOUSES, new Date());
+    if (!state) return;
+
+    lastState = state;
+    stripEl = buildStrip(state);
+    // Insert as the first body child so it precedes .topnav in document order.
+    document.body.insertBefore(stripEl, document.body.firstChild);
+
+    refreshTimer = setInterval(refresh, REFRESH_MS);
+  }
+
+  // Escape-key dismiss, but only when the scrubber and lightbox are NOT open.
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!stripEl) return;
+    if (document.querySelector('.scrubber-frame.is-fullscreen')) return;
+    var lb = document.getElementById('lightbox');
+    if (lb && lb.classList.contains('open')) return;
+    onDismiss();
+  });
+
+  // Run now (script is deferred, so DOM is parsed) or wait if not.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
